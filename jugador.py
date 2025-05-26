@@ -5,8 +5,10 @@ class Jugador:
         self.nombre = nombre
         self.dinero = dinero
         self.empresas = []
+        self.saltar_turno = False
+        self.bono_ventas = False
 
-    def tomar_turno(self, mercado, jugadores):
+    def tomar_turno(self, mercado, jugadores, mundo):
         print(f"\nTurno de {self.nombre}")
         for i, empresa in enumerate(mercado):
             print(f"{i}: {empresa}")
@@ -51,15 +53,21 @@ class Jugador:
         print("No se logró un acuerdo.")
         return False
 
-    def realizar_compra(self, empresa, precio):
+    def realizar_compra(self, empresa, precio, mundo):
         if empresa.esta_disponible() and self.dinero >= precio:
             self.empresas.append(empresa)
             self.dinero -= precio
             empresa.propietario = self
             self.aplicar_bonificacion_inmediata(empresa)
+
             print(f"Has comprado {empresa.nombre} por ${precio}.")
             if empresa.ventaja:
                 print(f"¡Has desbloqueado la ventaja especial: {empresa.ventaja}!")
+
+            # Aplicar efecto si existe y se proporciona el mundo
+            if hasattr(empresa, "aplicar_efecto") and mundo:
+                empresa.aplicar_efecto(self, mundo)
+
 
     def vender_empresa(self, empresa_nombre, precio):
         for empresa in self.empresas:
@@ -113,12 +121,12 @@ class IAJugador(Jugador):
     def __str__(self):
         return f"{self.nombre} (IA) - Dinero: ${self.dinero} - Empresas: {[e.nombre for e in self.empresas]}"
 
-    def tomar_turno(self, mercado, jugadores):
+    def tomar_turno(self, mercado, jugadores, mundo):
         _, mejor_accion = self.minimax(mercado, jugadores, depth=2, maximizing_player=True, alpha=float('-inf'), beta=float('inf'))
         if mejor_accion:
             tipo_accion, empresa = mejor_accion
             if tipo_accion == 'comprar':
-                self.realizar_compra(empresa, empresa.valor)
+                self.realizar_compra(empresa, empresa.valor, mundo)
                 mercado.remove(empresa)
                 print(f"{self.nombre} compró {empresa.nombre} usando Minimax.")
             elif tipo_accion == 'vender':
