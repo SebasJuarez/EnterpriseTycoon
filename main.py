@@ -8,8 +8,8 @@ from jugador import Jugador, IAJugador
 from mundo import MundoEmpresarial
 
 pygame.init()
-registro_ia = []  # Guardará los datos por ronda
-# --- Configuraciones ---
+registro_ia = [] 
+
 ANCHO, ALTO = 1000, 800
 VENTANA = pygame.display.set_mode((ANCHO, ALTO))
 pygame.display.set_caption("Simulador Empresarial")
@@ -96,7 +96,6 @@ def ver_reporte():
 
     print("Reporte generado como 'reporte_ia.csv'")
 
-    # --- Análisis de IA ---
     resumen = defaultdict(lambda: {
         "rondas": 0,
         "dinero_final": 0,
@@ -189,17 +188,14 @@ def ejecutar_juego(jugadores):
         VENTANA.blit(titulo, (50, 30))
         VENTANA.blit(pista, (50, 80))
 
-        # Generar nuevas empresas esta ronda
         juego.generar_empresas()
 
-        # Mostrar jugadores antes de tomar turnos
         for idx, jugador in enumerate(juego.jugadores):
             color = COLORES_JUGADORES[idx % len(COLORES_JUGADORES)]
             info = f"{jugador.nombre} | Dinero: ${jugador.dinero} | Empresas: {', '.join([e.nombre for e in jugador.empresas])}"
             render = FUENTE_SMALL.render(info, True, color)
             VENTANA.blit(render, (50, 140 + idx * 40))
         
-        # Botón de vender empresa/saltar turno
         boton_vender = pygame.Rect(600, 30, 160, 40)
         boton_saltar = pygame.Rect(780, 30, 160, 40)
 
@@ -213,11 +209,10 @@ def ejecutar_juego(jugadores):
         VENTANA.blit(texto_saltar, (boton_saltar.x + 20, boton_saltar.y + 10))
 
 
-        # Mostrar empresas como tarjetas
-        empresas_texto = FUENTE_SMALL.render("🛒 Empresas disponibles:", True, COLOR_TEXTO)
+        empresas_texto = FUENTE_SMALL.render("Empresas disponibles:", True, COLOR_TEXTO)
         VENTANA.blit(empresas_texto, (50, 300))
 
-        empresa_rects = []  # Guardar cada rect con su empresa
+        empresa_rects = []  
 
         for i, emp in enumerate(juego.empresas_disponibles):
             x, y = 50 + (i % 3) * 250, 340 + (i // 3) * 100
@@ -244,7 +239,6 @@ def ejecutar_juego(jugadores):
 
         pygame.display.flip()
 
-        # Turno del jugador humano
         jugador_humano = next((j for j in juego.jugadores if isinstance(j, Jugador)), None)
         if jugador_humano:
             esperando = True
@@ -277,15 +271,13 @@ def ejecutar_juego(jugadores):
                                 break
 
 
-        # Turnos de las IAs (después del jugador)
+        # Turnos de las IAs
         for jugador in juego.jugadores:
             if isinstance(jugador, IAJugador):
-                # Decidir si vender antes de tomar turno
                 ventas = decidir_ventas_ia(jugador)
                 for empresa, precio, razon in ventas:
                     jugador.empresas.remove(empresa)
-                    jugador.dinero += precio  # Simulamos venta inmediata
-                    # (Opcional) podrías agregar un registro visual o imprimir algo:
+                    jugador.dinero += precio
                     print(f"{jugador.nombre} vendió {empresa.nombre} por ${precio} ({razon})")
                 
                 jugador.tomar_turno(juego.empresas_disponibles, juego.jugadores, juego)
@@ -295,7 +287,6 @@ def ejecutar_juego(jugadores):
             aplicar_ventajas(jugador)
         juego.ronda += 1
 
-    # Mostrar resultado final
     VENTANA.fill(COLOR_FONDO)
     titulo = FUENTE.render("RESULTADOS FINALES:", True, COLOR_TEXTO)
     VENTANA.blit(titulo, (50, 30))
@@ -347,7 +338,6 @@ def seleccionar_empresa_para_vender(jugador):
             texto = f"{emp.nombre} ({emp.tipo}) - Valor: ${emp.valor}"
             VENTANA.blit(FUENTE_SMALL.render(texto, True, COLOR_TEXTO), (x + 10, y + 15))
 
-        # Si ya seleccionó una empresa, mostrar campo para ingresar precio
         if empresa_seleccionada:
             msg = FUENTE_SMALL.render(f"Ingresa precio para vender {empresa_seleccionada.nombre}:", True, COLOR_TEXTO)
             VENTANA.blit(msg, (50, 560))
@@ -357,12 +347,10 @@ def seleccionar_empresa_para_vender(jugador):
             VENTANA.blit(texto_input, (input_box.x + 10, input_box.y + 5))
             pygame.draw.rect(VENTANA, COLOR_TEXTO, input_box, 2)
 
-            # Botón confirmar
             pygame.draw.rect(VENTANA, COLOR_BOTON, boton_confirmar, border_radius=5)
             texto_conf = FUENTE_SMALL.render("Confirmar", True, COLOR_TEXTO)
             VENTANA.blit(texto_conf, (boton_confirmar.x + 10, boton_confirmar.y + 10))
 
-        # Botón cancelar
         pygame.draw.rect(VENTANA, COLOR_BOTON, boton_cancelar, border_radius=5)
         texto_cancelar = FUENTE_SMALL.render("Cancelar", True, COLOR_TEXTO)
         VENTANA.blit(texto_cancelar, (boton_cancelar.x + 30, boton_cancelar.y + 10))
@@ -585,8 +573,7 @@ def ejecutar_juego_ia(jugadores):
         pygame.time.delay(1000)
 
 
-        # Subasta automática para cada empresa
-        for emp in juego.empresas_disponibles[:]:  # Copia para iterar mientras se modifica
+        for emp in juego.empresas_disponibles[:]: 
             iniciar_subasta_ia(emp, juego.jugadores)
 
         juego.empresas_disponibles = [e for e in juego.empresas_disponibles if e.esta_disponible()]
@@ -605,7 +592,6 @@ def ejecutar_juego_ia(jugadores):
                 "objetivo_secreto_cumplido": objetivo_secreto["condicion"](ia)
             })
 
-    # Mostrar resultados
     VENTANA.fill(COLOR_FONDO)
     titulo = FUENTE.render("RESULTADOS IAs:", True, COLOR_TEXTO)
     VENTANA.blit(titulo, (50, 30))
@@ -631,7 +617,7 @@ def iniciar_subasta_ia(empresa, jugadores):
     mejor_postor = None
     hubo_puja = False
 
-    for i in range(5):  # Hasta 5 rondas de puja IA
+    for i in range(5): 
         pygame.time.delay(1000)
         VENTANA.fill(COLOR_FONDO)
         titulo = FUENTE.render(f"Subasta IA: {empresa.nombre}", True, COLOR_TEXTO)
@@ -648,7 +634,7 @@ def iniciar_subasta_ia(empresa, jugadores):
                 mejor_postor = ia
                 postores.append(f"{ia.nombre} puja ${oferta_actual}")
                 hubo_puja = True
-                break  # Solo una IA puja por ronda para hacer la animación pausada
+                break 
 
         for postor in postores:
             VENTANA.blit(FUENTE_SMALL.render(postor, True, COLOR_TEXTO), (50, y))
@@ -676,15 +662,13 @@ def iniciar_subasta_ia(empresa, jugadores):
 def decidir_ventas_ia(ia):
     empresas_a_vender = []
     for emp in ia.empresas:
-        # Criterios negativos (no vender)
         if emp.ventaja and "Dominio" in emp.ventaja:
             continue
         if ia.estrategia == "acaparadora" and ia.contar_por_tipo()[emp.tipo] <= 1:
             continue
         if ia.dinero > 2000 and random.random() < 0.5:
-            continue  # no necesita vender aún
+            continue
 
-        # Criterios positivos
         razon = ""
         precio_base = emp.valor
 
@@ -729,6 +713,5 @@ def menu():
     pygame.quit()
     sys.exit()
 
-# --- Iniciar el menú ---
 if __name__ == "__main__":
     menu()

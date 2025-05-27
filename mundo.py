@@ -7,7 +7,6 @@ class MundoEmpresarial:
         self.empresas_disponibles = []
         self.ronda = 1
 
-        # Catálogo completo
         self.catalogo_empresas = [
             Empresa("Google", "tecnologia", 3000, 1, "Dominio en publicidad", efecto="bono_publicidad"),
             Empresa("Pfizer", "salud", 2800, 1, "Acceso a patentes exclusivas", efecto="bono_patente"),
@@ -29,7 +28,6 @@ class MundoEmpresarial:
         ]
 
 
-        # Solo las empresas que aún no han sido ofrecidas
         self.catalogo_disponible = self.catalogo_empresas.copy()
 
     def generar_empresas(self):
@@ -64,11 +62,10 @@ class MundoEmpresarial:
     def ejecutar_ronda(self):
         print(f"\n--- Ronda {self.ronda} ---")
 
-        self.ejecutar_eventos()  # Ejecutar penalizaciones pendientes
+        self.ejecutar_eventos() 
         self.generar_empresas()
 
         for jugador in self.jugadores:
-            # Verificar si el jugador debe saltar turno
             if hasattr(jugador, "saltar_turno") and jugador.saltar_turno:
                 print(f"⏭ {jugador.nombre} pierde este turno por penalización.")
                 jugador.saltar_turno = False
@@ -76,7 +73,6 @@ class MundoEmpresarial:
 
             jugador.tomar_turno(self.empresas_disponibles, self.jugadores, self)
 
-        # Quitar empresas que fueron compradas
         self.empresas_disponibles = [e for e in self.empresas_disponibles if e.esta_disponible()]
         self.ronda += 1
 

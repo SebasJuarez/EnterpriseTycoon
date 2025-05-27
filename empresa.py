@@ -1,12 +1,12 @@
 class Empresa:
     def __init__(self, nombre, tipo, valor, nivel, ventaja=None, propietario=None, efecto=None):
         self.nombre = nombre
-        self.tipo = tipo  # Ej: "tecnologia", "salud", etc.
+        self.tipo = tipo 
         self.valor = valor
         self.nivel = nivel
-        self.ventaja = ventaja  # Texto opcional descriptivo
+        self.ventaja = ventaja 
         self.propietario = propietario
-        self.efecto = efecto  # Código del efecto (string)
+        self.efecto = efecto 
 
     def esta_disponible(self):
         return self.propietario is None

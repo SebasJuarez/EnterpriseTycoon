@@ -18,7 +18,6 @@ class Jugador:
             empresa.propietario = self
             self.aplicar_bonificacion_inmediata(empresa)
 
-            # Aplicar efecto si existe
             if hasattr(empresa, "aplicar_efecto") and mundo:
                 empresa.aplicar_efecto(self, mundo)
 
