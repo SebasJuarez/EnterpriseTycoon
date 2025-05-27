@@ -291,6 +291,8 @@ def ejecutar_juego(jugadores):
                 jugador.tomar_turno(juego.empresas_disponibles, juego.jugadores, juego)
 
         juego.empresas_disponibles = [e for e in juego.empresas_disponibles if e.esta_disponible()]
+        for jugador in juego.jugadores:
+            aplicar_ventajas(jugador)
         juego.ronda += 1
 
     # Mostrar resultado final
@@ -403,6 +405,38 @@ def seleccionar_empresa_para_vender(jugador):
                 elif evento.unicode.isdigit():
                     if len(precio_input) < 7:
                         precio_input += evento.unicode
+
+def aplicar_ventajas(jugador):
+    for empresa in jugador.empresas:
+        if empresa.ventaja:
+            texto = f"{jugador.nombre} recibe beneficio por '{empresa.ventaja}'"
+            beneficio = ""
+
+            if "Dominio" in empresa.ventaja:
+                jugador.dinero += 300
+                beneficio = "+$300 por dominio de sector"
+            elif "Innovadora" in empresa.ventaja:
+                empresa.valor = int(empresa.valor * 1.10)
+                beneficio = "+10% al valor de la empresa"
+            elif "Alta Demanda" in empresa.ventaja:
+                jugador.dinero += 150
+                beneficio = "+$150 por ingresos extras"
+            elif "Estable" in empresa.ventaja:
+                jugador.dinero += 100
+                beneficio = "+$100 por estabilidad"
+            elif "Reputación" in empresa.ventaja:
+                jugador.dinero += 200
+                beneficio = "+$200 por buena imagen"
+
+            if beneficio:
+                # Mostrar en pantalla
+                VENTANA.fill(COLOR_FONDO)
+                msg1 = FUENTE_SMALL.render(texto, True, COLOR_TEXTO)
+                msg2 = FUENTE_SMALL.render(beneficio, True, COLOR_TEXTO)
+                VENTANA.blit(msg1, (50, 300))
+                VENTANA.blit(msg2, (50, 340))
+                pygame.display.flip()
+                pygame.time.delay(2000)
 
 
 def iniciar_subasta(empresa, jugadores, ventana, fuente, fuente_small, color_fondo, color_texto, color_input_bg, color_input):
@@ -556,6 +590,8 @@ def ejecutar_juego_ia(jugadores):
             iniciar_subasta_ia(emp, juego.jugadores)
 
         juego.empresas_disponibles = [e for e in juego.empresas_disponibles if e.esta_disponible()]
+        for jugador in juego.jugadores:
+            aplicar_ventajas(jugador)
         juego.ronda += 1
 
         for ia in [j for j in jugadores if isinstance(j, IAJugador)]:

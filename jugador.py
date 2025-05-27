@@ -9,7 +9,6 @@ class Jugador:
         self.bono_ventas = False
 
     def tomar_turno(self, mercado, jugadores, mundo):
-        # El turno del jugador humano será manejado desde la interfaz gráfica.
         pass
 
     def realizar_compra(self, empresa, precio, mundo):
@@ -60,7 +59,7 @@ class IAJugador(Jugador):
         return f"{self.nombre} (IA) - Dinero: ${self.dinero} - Empresas: {[e.nombre for e in self.empresas]}"
 
     def tomar_turno(self, mercado, jugadores, mundo):
-        _, mejor_accion = self.minimax(mercado, jugadores, depth=2, maximizing_player=True, alpha=float('-inf'), beta=float('inf'))
+        _, mejor_accion = self.minimax_global(mercado, jugadores, jugadores.index(self), depth=2, alpha=float('-inf'), beta=float('inf'))
         if mejor_accion:
             tipo_accion, empresa = mejor_accion
             if tipo_accion == 'comprar':
@@ -71,61 +70,72 @@ class IAJugador(Jugador):
                 self.dinero += int(empresa.valor * 0.9)
                 empresa.propietario = None
 
-    def evaluar_estado(self, empresas, jugadores):
-        valor = self.dinero + sum(e.valor for e in self.empresas)
-        tipos = self.contar_por_tipo()
-        bonificacion = sum((n - 1) * 500 for n in tipos.values() if n > 1)
-        return valor + bonificacion
+    def evaluar_estado_global(self, jugadores):
+        for j in jugadores:
+            if j.nombre == self.nombre:
+                valor = j.dinero + sum(e.valor for e in j.empresas)
+                tipos = j.contar_por_tipo()
+                bonificacion = sum((n - 1) * 500 for n in tipos.values() if n > 1)
+                return valor + bonificacion
+        return 0
 
-    def minimax(self, mercado, jugadores, depth, maximizing_player, alpha, beta):
+
+    def minimax_global(self, mercado, jugadores, index, depth, alpha, beta):
         if depth == 0 or not mercado:
-            return self.evaluar_estado(mercado, jugadores), None
+            return self.evaluar_estado_global(jugadores), None
 
-        if maximizing_player:
-            max_eval = float('-inf')
-            best_choice = None
+        jugador_actual = jugadores[index]
 
-            for empresa in mercado:
-                if self.dinero >= empresa.valor:
-                    simulador = IAJugador(self.nombre, self.dinero - empresa.valor, self.estrategia)
-                    simulador.empresas = self.empresas + [empresa]
-                    eval_score, _ = simulador.minimax(
-                        [e for e in mercado if e != empresa], jugadores, depth - 1, False, alpha, beta
-                    )
+        acciones_posibles = []
+
+        for empresa in mercado:
+            if jugador_actual.dinero >= empresa.valor:
+                acciones_posibles.append(('comprar', empresa))
+
+        for empresa in jugador_actual.empresas:
+            if len(jugador_actual.empresas) > 1 and not empresa.ventaja:
+                acciones_posibles.append(('vender', empresa))
+
+        mejor_accion = None
+
+        if isinstance(jugador_actual, IAJugador):
+            if jugador_actual.nombre == self.nombre:
+                max_eval = float('-inf')
+                for accion, empresa in acciones_posibles:
+                    copia_jugadores, copia_mercado = simular_accion(jugadores, mercado, index, accion, empresa)
+                    eval_score, _ = self.minimax_global(copia_mercado, copia_jugadores, (index + 1) % len(jugadores), depth - 1, alpha, beta)
                     if eval_score > max_eval:
                         max_eval = eval_score
-                        best_choice = ('comprar', empresa)
+                        mejor_accion = (accion, empresa)
                     alpha = max(alpha, eval_score)
                     if beta <= alpha:
                         break
-
-            for empresa in self.empresas:
-                if len(self.empresas) <= 1 or empresa.ventaja:
-                    continue
-                venta_valor = int(empresa.valor * 0.9)
-                simulador = IAJugador(self.nombre, self.dinero + venta_valor, self.estrategia)
-                simulador.empresas = [e for e in self.empresas if e != empresa]
-                eval_score, _ = simulador.minimax(mercado, jugadores, depth - 1, False, alpha, beta)
-                if eval_score > max_eval:
-                    max_eval = eval_score
-                    best_choice = ('vender', empresa)
-                alpha = max(alpha, eval_score)
-                if beta <= alpha:
-                    break
-
-            return max_eval, best_choice
-
-        else:
-            min_eval = float('inf')
-            for empresa in mercado:
-                if self.dinero >= empresa.valor:
-                    simulador = IAJugador(self.nombre, self.dinero - empresa.valor, self.estrategia)
-                    simulador.empresas = self.empresas + [empresa]
-                    eval_score, _ = simulador.minimax(
-                        [e for e in mercado if e != empresa], jugadores, depth - 1, True, alpha, beta
-                    )
+                return max_eval, mejor_accion
+            else:
+                min_eval = float('inf')
+                for accion, empresa in acciones_posibles:
+                    copia_jugadores, copia_mercado = simular_accion(jugadores, mercado, index, accion, empresa)
+                    eval_score, _ = self.minimax_global(copia_mercado, copia_jugadores, (index + 1) % len(jugadores), depth - 1, alpha, beta)
                     min_eval = min(min_eval, eval_score)
                     beta = min(beta, eval_score)
                     if beta <= alpha:
                         break
-            return min_eval, None
+                return min_eval, None
+        else:
+            return self.minimax_global(mercado, jugadores, (index + 1) % len(jugadores), depth, alpha, beta)
+
+def simular_accion(jugadores, mercado, index, accion, empresa):
+    import copy
+    jugadores_copia = copy.deepcopy(jugadores)
+    mercado_copia = copy.deepcopy(mercado)
+    jugador = jugadores_copia[index]
+
+    if accion == "comprar":
+        jugador.dinero -= empresa.valor
+        jugador.empresas.append(empresa)
+        mercado_copia = [e for e in mercado_copia if e.nombre != empresa.nombre]
+    elif accion == "vender":
+        jugador.dinero += int(empresa.valor * 0.9)
+        jugador.empresas = [e for e in jugador.empresas if e.nombre != empresa.nombre]
+
+    return jugadores_copia, mercado_copia
