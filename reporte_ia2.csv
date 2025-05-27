@@ -8,12 +8,3 @@ ronda,nombre,dinero,empresas,tipos,valor_total,objetivo_secreto_cumplido
 3,NeuroCorp,8270,2,['tecnologia'],14370,False
 3,CorpX,800,3,"['energia', 'medios', 'salud']",6400,False
 3,MegaTech,2700,1,['tecnologia'],6300,False
-1,NeuroCorp,1450,2,"['tecnologia', 'medios']",6750,False
-1,CorpX,2600,1,['finanzas'],6400,False
-1,MegaTech,5000,0,[],5000,False
-2,NeuroCorp,2939,3,"['entretenimiento', 'tecnologia', 'medios']",10239,False
-2,CorpX,2600,1,['finanzas'],6400,False
-2,MegaTech,5000,0,[],5000,False
-3,NeuroCorp,8929,2,"['medios', 'salud']",13329,True
-3,CorpX,1600,2,"['finanzas', 'inmobiliario']",6400,False
-3,MegaTech,3500,1,['tecnologia'],6500,True
