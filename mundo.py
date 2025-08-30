@@ -49,7 +49,7 @@ class MundoEmpresarial:
             ronda_objetivo, jugador, cantidad = evento
             if self.ronda == ronda_objetivo:
                 jugador.dinero -= cantidad
-                print(f"💥 {jugador.nombre} pierde ${cantidad} por penalización programada.")
+                print(f"{jugador.nombre} pierde ${cantidad} por penalización programada.")
                 self.eventos_programados.remove(evento)
 
     def agendar_castigo(self, jugador, rondas_despues, cantidad):
@@ -67,7 +67,7 @@ class MundoEmpresarial:
 
         for jugador in self.jugadores:
             if hasattr(jugador, "saltar_turno") and jugador.saltar_turno:
-                print(f"⏭ {jugador.nombre} pierde este turno por penalización.")
+                print(f"{jugador.nombre} pierde este turno por penalización.")
                 jugador.saltar_turno = False
                 continue
 

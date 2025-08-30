@@ -1,19 +1,10 @@
 ronda,nombre,dinero,empresas,tipos,valor_total,objetivo_secreto_cumplido
-1,NeuroCorp,1650,2,"['finanzas', 'tecnologia']",7150,False
-1,CorpX,3100,1,['energia'],6100,False
-1,MegaTech,5000,0,[],5000,False
-2,NeuroCorp,1310,3,['tecnologia'],10810,False
-2,CorpX,1700,2,"['energia', 'medios']",6500,False
-2,MegaTech,5000,0,[],5000,False
-3,NeuroCorp,8270,2,['tecnologia'],14370,False
-3,CorpX,800,3,"['energia', 'medios', 'salud']",6400,False
-3,MegaTech,2700,1,['tecnologia'],6300,False
-1,NeuroCorp,1450,2,"['tecnologia', 'medios']",6750,False
-1,CorpX,2600,1,['finanzas'],6400,False
-1,MegaTech,5000,0,[],5000,False
-2,NeuroCorp,2939,3,"['entretenimiento', 'tecnologia', 'medios']",10239,False
-2,CorpX,2600,1,['finanzas'],6400,False
-2,MegaTech,5000,0,[],5000,False
-3,NeuroCorp,8929,2,"['medios', 'salud']",13329,True
-3,CorpX,1600,2,"['finanzas', 'inmobiliario']",6400,False
-3,MegaTech,3500,1,['tecnologia'],6500,True
+1,NeuroCorp,1850,2,"['salud', 'tecnologia']",6150,False
+1,CorpX,5000,0,[],5000,False
+1,MegaTech,3250,1,['medios'],5750,False
+2,NeuroCorp,5540,1,['salud'],8340,False
+2,CorpX,2400,2,"['tecnologia', 'inmobiliario']",6400,True
+2,MegaTech,6500,0,[],6500,False
+3,NeuroCorp,3140,2,"['salud', 'finanzas']",9740,False
+3,CorpX,1300,3,"['tecnologia', 'inmobiliario', 'medios']",7100,True
+3,MegaTech,4350,1,['tecnologia'],7650,False

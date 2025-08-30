@@ -6,6 +6,11 @@ from collections import defaultdict
 import statistics
 from jugador import Jugador, IAJugador
 from mundo import MundoEmpresarial
+from UI_helpers.ui_theme import COLOR_BG, COLOR_TEXT, load_font, render_neon, render_with_shadow
+from UI_helpers.ui_theme import *
+from UI_helpers.ui_button import UIButton
+from UI_helpers.ui_input import UIInput
+
 
 pygame.init()
 registro_ia = [] 
@@ -73,7 +78,7 @@ class Boton:
             self.accion()
 
 def jugar():
-    ingresar_nombre()
+    ingresar_nombre(VENTANA, ANCHO, ALTO, clock)
 
 def partida_ia():
     ia_0 = IAJugador("NeuroCorp", 5000, "pasiva")
@@ -81,6 +86,11 @@ def partida_ia():
     ia_2 = IAJugador("MegaTech", 5000, "agresiva")
     jugadores = [ia_0, ia_1, ia_2]
     ejecutar_juego_ia(jugadores)
+
+def draw_rounded_rect(surf, rect, color, radius=12, border=0, border_color=(0,0,0)):
+    pygame.draw.rect(surf, color, rect, border_radius=radius)
+    if border > 0:
+        pygame.draw.rect(surf, border_color, rect, width=border, border_radius=radius)
 
 def ver_reporte():
     if not registro_ia:
@@ -128,15 +138,27 @@ def ver_reporte():
         print(f"   • Veces que cumplió el objetivo secreto: {datos['objetivos_cumplidos']}/{datos['rondas']}")
         print("")
 
-def ingresar_nombre():
-    nombre = ""
+def ingresar_nombre(VENTANA, ANCHO, ALTO, clock,
+                          fuente_label_path=None, fuente_input_path=None):
     activo = True
-    input_box = pygame.Rect(250, 280, 300, 50)
+    fuente_label = pygame.font.Font(fuente_label_path, 42) if fuente_label_path else pygame.font.SysFont("arial", 42, bold=True)
+    fuente_input = pygame.font.Font(fuente_input_path, 30) if fuente_input_path else pygame.font.SysFont("arial", 30)
+    # input_box = UIInput((250, 280, 300, 50), fuente_in, text="")
+    label_text = "Ingresa tu nombre:"
+    label_surf = fuente_label.render(label_text, True, COLOR_TEXT)
+    label_pos  = (ANCHO//2 - label_surf.get_width()//2, 150)
+
+    input_rect = pygame.Rect(ANCHO//2 - 220, 240, 440, 56)
+    cursor_visible = True
+    cursor_timer = 0
+    nombre = ""
+
+
 
     while activo:
-        VENTANA.fill(COLOR_FONDO)
-        titulo = FUENTE.render("Ingresa tu nombre:", True, COLOR_TEXTO)
-        VENTANA.blit(titulo, (ANCHO // 2 - titulo.get_width() // 2, 200))
+        # VENTANA.fill(COLOR_FONDO)
+        # titulo = render_with_shadow(fuente_lbl, "Ingresa tu nombre:", COLOR_TEXTO)
+        # VENTANA.blit(titulo, (ANCHO // 2 - titulo.get_width() // 2, 180))
 
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
@@ -144,7 +166,8 @@ def ingresar_nombre():
                 sys.exit()
             if evento.type == pygame.KEYDOWN:
                 if evento.key == pygame.K_RETURN:
-                    jugador_humano = Jugador(nombre, 5000)
+                    nombre_final = nombre.strip() if nombre.strip() else "Jugador"
+                    jugador_humano = Jugador(nombre_final, 5000)
                     ia_1 = IAJugador("CorpX", 5000, "acaparadora")
                     ia_2 = IAJugador("MegaTech", 5000, "agresiva")
                     jugadores = [jugador_humano, ia_1, ia_2]
@@ -153,13 +176,33 @@ def ingresar_nombre():
                 elif evento.key == pygame.K_BACKSPACE:
                     nombre = nombre[:-1]
                 else:
-                    if len(nombre) < 20:
+                    if len(nombre) < 20 and evento.unicode and evento.unicode.isprintable():
                         nombre += evento.unicode
 
-        pygame.draw.rect(VENTANA, COLOR_INPUT_BG, input_box)
-        texto_nombre = FUENTE_INPUT.render(nombre, True, COLOR_INPUT)
-        VENTANA.blit(texto_nombre, (input_box.x + 10, input_box.y + 10))
-        pygame.draw.rect(VENTANA, COLOR_TEXTO, input_box, 2)
+        # input_box.draw(VENTANA)
+        VENTANA.fill(COLOR_BG)
+        VENTANA.blit(label_surf, label_pos)
+
+        draw_rounded_rect(VENTANA, input_rect, CARD_BG, radius=10, border=2, border_color=CARD_STROKE)
+
+        # Cursor parpadeante
+        cursor_timer = (cursor_timer + clock.get_time()) % 800
+        cursor_visible = cursor_timer < 400
+
+        texto = nombre if nombre else ""
+        texto_surf = fuente_input.render(texto, True, COLOR_TEXT)
+        VENTANA.blit(texto_surf, (input_rect.x + 12, input_rect.y + (input_rect.h - texto_surf.get_height())//2))
+
+        # Dibujar cursor al final del texto
+        if cursor_visible:
+            cx = input_rect.x + 12 + texto_surf.get_width() + 2
+            cy = input_rect.y + 10
+            pygame.draw.rect(VENTANA, COLOR_TEXT, (cx, cy, 2, input_rect.h - 20))
+
+        # pygame.draw.rect(VENTANA, COLOR_INPUT_BG, input_box)
+        # texto_nombre = FUENTE_INPUT.render(nombre, True, COLOR_INPUT)
+        # VENTANA.blit(texto_nombre, (input_box.x + 10, input_box.y + 10))
+        # pygame.draw.rect(VENTANA, COLOR_TEXTO, input_box, 2)
 
         pygame.display.flip()
         clock.tick(60)
@@ -673,13 +716,13 @@ def decidir_ventas_ia(ia):
         precio_base = emp.valor
 
         if ia.dinero < 1000:
-            razon = "💸 Necesita liquidez"
+            razon = "Necesita liquidez"
             precio_venta = int(precio_base * 0.9)
         elif emp.ventaja:
-            razon = "🎯 Vende con ventaja"
+            razon = "Vende con ventaja"
             precio_venta = int(precio_base * 1.3)
         else:
-            razon = "🤝 Venta estratégica"
+            razon = "Venta estratégica"
             precio_venta = int(precio_base * random.uniform(1.1, 1.2))
 
         empresas_a_vender.append((emp, precio_venta, razon))
@@ -687,28 +730,38 @@ def decidir_ventas_ia(ia):
 
 
 def menu():
+    pygame
+    fuente_titulo = pygame.font.Font("./fonts/PressStart2P-vaV7.ttf", 48)
+    fuente_btn = pygame.font.SysFont("Arial", 30)
+
     botones = [
-        Boton("Jugar", 300, 200, 200, 50, jugar),
-        Boton("Ver partida de IAs", 300, 280, 200, 50, partida_ia),
-        Boton("Ver reporte de aprendizaje", 300, 360, 200, 50, ver_reporte)
+        UIButton((300, 200, 400, 50), "Jugar", fuente_btn, jugar),
+        UIButton((300, 280, 400, 50), "Ver partida de IAs", fuente_btn, partida_ia),
+        UIButton((300, 360, 400, 50), "Ver reporte de aprendizaje", fuente_btn, ver_reporte)
     ]
 
     corriendo = True
+    t = 0.0
     while corriendo:
-        VENTANA.fill(COLOR_FONDO)
+        VENTANA.fill(COLOR_BG)
 
-        titulo = FUENTE.render("Simulador Empresarial", True, COLOR_TEXTO)
-        VENTANA.blit(titulo, (ANCHO // 2 - titulo.get_width() // 2, 100))
-
-        for boton in botones:
-            boton.dibujar(VENTANA)
+        scale = 1.0 + 0.02 * (pygame.time.get_ticks()%1200)/1200  # pulso suave
+        titulo_surface = render_neon(fuente_titulo, "ENTERPRISE TYCOON")
+        titulo_surface = pygame.transform.rotozoom(titulo_surface, 0, scale)
+        VENTANA.blit(titulo_surface, (ANCHO//2 - titulo_surface.get_width()//2, 80))
 
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 corriendo = False
+            for boton in botones:
+                boton.handle(evento)
+
+        for boton in botones:
+            boton.draw(VENTANA)
 
         pygame.display.flip()
         clock.tick(60)
+
 
     pygame.quit()
     sys.exit()
